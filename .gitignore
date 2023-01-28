@@ -1,0 +1,56 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+*.d
+*.lst
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Misc
+*.cfg
+*.bin
+*.map
+*.m
+*.yaml
+*.png
+
+# Eclipse CDT project files
+.cproject
+.project
+.settings/
+.vscode
+
+# Vagrant directory
+.vagrant/
+
+# Include makefiles
+!Makefile
+*~
+
+#stm32-for-vscode
+STM32Make.make
+
+# Libraries
+/lib
+
+STM32Make.make
