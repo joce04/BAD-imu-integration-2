@@ -407,7 +407,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
+    //make this the debounced button to read press for calibration
+    if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == 1) {
+      //Wait until the button is pressed(i.e. for the hall voltage to go high)
+      while(!(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == 1)){   
+      }
+
+      //A potential button press has been detected. If the voltage is low after 50ms then it was just noise.
+      HAL_Delay(50);
+      if(!(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == 1)){
+      }
+      else{
+        //Button press detected -- Callibrate!
+      }
+    }
+
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	  HAL_Delay(30);
 
