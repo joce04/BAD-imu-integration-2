@@ -36,6 +36,8 @@
 /* USER CODE BEGIN PTD */
 #define MAX_LED 50
 #define USE_BRIGHTNESS 0
+#define SIZE 20
+#define TIME 10
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -92,6 +94,7 @@ void LED_RaceStart(void);
 void TestAll(int Red, int Green, int Blue);
 double CalculateAccel (double velocity1, double velocity2, double time);
 void ReflectData(double vector);
+void ShowData(double angle, int interval, int start);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -316,10 +319,36 @@ void ReflectData(double vector) {
 }
  
 double CalculateAccel (double velocity1, double velocity2, double time) {
-  double acceleration = (velocity1 + velocity2)/time;
+  double acceleration = (velocity1 - velocity2)/time;
 
   return acceleration;
 }
+
+void ShowData(double angle, int interval, int start) {
+  int red, green, blue;
+  if ((int) angle == 0) {
+    red = 100;
+    green = 100;
+    blue = 100;
+  } else if (angle < 0) {
+    red = 0;
+    green = 0;
+    blue = 255;
+    angle = -angle;
+  } else if (angle > 0) {
+    red = 255;
+    green = 255;
+    blue = 0;
+  }
+
+  if (angle >= interval) {
+    Set_LED((start + interval), 255,0,0);
+    angle = interval-1;
+  }
+  SetSection(red, green, blue, start, (start+angle));
+  //SetSome(red, green, blue, angle, start);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -364,21 +393,56 @@ int main(void)
 
   HAL_Delay(1000); //a short delay is important to let the SD card settle
 
+  bno055_vector_t p = {0,0,0,0};
   bno055_vector_t v = {0,0,0,0};
-  SetAll(255,0,255);
-  WS2812_Send();
+  double velAvg[SIZE] = {0};
+  double velocitySum = 0;
+  double velocity;
+  double accelAvg[SIZE/10] = {0};
+  double accelSum = 0;
+  double acceleration;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	  HAL_Delay(30);
-    v = bno055_getVectorEuler();
-    serialprintf("Yaw: %d Roll: %d Pitch: %d\r\n", (int) v.x, (int) v.z, (int) v.y);
-    SetAll(255,0,255);
-    WS2812_Send();
+
+    p = bno055_getVectorEuler();
+
+    for (int i = 0; i < SIZE; i++) {
+      velocitySum -= velAvg[i];
+
+      p = bno055_getVectorEuler();
+      double p1 = p.z;
+      HAL_Delay(TIME);
+      p = bno055_getVectorEuler();
+      double p2 = p.z;
+      velAvg[i] = (p2-p1)/TIME;
+      velocitySum += velAvg[i];
+      //loops around to the beginning
+      if (i == SIZE) {
+        i = 0;
+      }
+
+      velocity = velocitySum/SIZE;
+      acceleration = accelSum/SIZE;
+
+      //calculate future position
+
+      //to display the data onto the LEDs
+      SetAll(0,0,0);
+      ShowData(200* velocity, 10, 0);
+      ShowData(p.z, 10, 30);
+      WS2812_Send();
+      HAL_Delay(TIME);
+    }
+
+    serialprintf("Yaw: %d Roll: %d Pitch: %d\r\n", (int) p.x, (int) p.z, (int) p.y);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
